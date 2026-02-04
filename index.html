@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BuddyUp - Find Activity Partners</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <nav class="navbar">
+        <a href="#home" class="logo">BuddyUp</a>
+        <div class="nav-links">
+            <a href="#home" class="nav-link active">Home</a>
+            <a href="#match" class="nav-link">Matches</a>
+            <a href="#messages" class="nav-link">Messages <span id="messageBadge" class="nav-badge" style="display: none;">0</span></a>
+            <a href="#notifications" class="nav-link">Notifications <span id="notificationBadge" class="nav-badge" style="display: none;">0</span></a>
+            <a href="#profile" class="nav-link">My Profile</a>
+        </div>
+    </nav>
+
+    <main>
+        <!-- Home / Browse -->
+        <section id="home" class="section active">
+            <div class="hero">
+                <h1>Find Partners, Have Fun</h1>
+                <p class="hero-sub">Pick your activity hashtags, set your availability, and find like-minded buddies</p>
+            </div>
+            <div class="browse-section">
+                <h2>Explore Buddies</h2>
+                <div id="userCards" class="user-cards"></div>
+            </div>
+        </section>
+
+        <!-- Match / Recommendations -->
+        <section id="match" class="section">
+            <div class="match-header">
+                <h1>Your Matches</h1>
+                <p>Based on your activity hashtags and availability, we recommend the most similar partners</p>
+            </div>
+            <div id="matchCards" class="user-cards"></div>
+            <p id="matchEmpty" class="empty-msg" style="display: none;">Complete your profile with activity hashtags and availability to get recommendations</p>
+        </section>
+
+        <!-- Profile / Edit -->
+        <section id="profile" class="section">
+            <div class="profile-form">
+                <h1>My Profile</h1>
+                <div class="form-group">
+                    <label>Nickname</label>
+                    <input type="text" id="nickName" placeholder="Enter your nickname" maxlength="20">
+                </div>
+                <div class="form-group">
+                    <label>Bio <span class="hint">(Tell others a bit about yourself)</span></label>
+                    <textarea id="bio" placeholder="Write a short intro..." rows="4" maxlength="200"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Activity Hashtags <span class="hint">(Type to create or add from suggestions)</span></label>
+                    <div class="hashtag-input-wrap">
+                        <input type="text" id="hashtagInput" placeholder="Type a hashtag (e.g. #hiking) and press Enter" maxlength="30">
+                        <div id="hashtagSuggestions" class="hashtag-suggestions"></div>
+                    </div>
+                    <div id="hashtagList" class="hashtag-list"></div>
+                </div>
+                <div class="form-group">
+                    <label>Availability <span class="hint">(Click dates on the calendar to select when you're free)</span></label>
+                    <div class="calendar-wrap">
+                        <div class="calendar-header">
+                            <button type="button" class="calendar-nav" id="calPrev">&larr;</button>
+                            <span id="calMonthYear"></span>
+                            <button type="button" class="calendar-nav" id="calNext">&rarr;</button>
+                        </div>
+                        <div class="calendar-weekdays">
+                            <span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span>
+                        </div>
+                        <div id="calendarGrid" class="calendar-grid"></div>
+                        <div class="calendar-time-row">
+                            <label>Time slot:</label>
+                            <select id="scheduleTime">
+                                <option value="6am-9am">6am – 9am</option>
+                                <option value="9am-12pm">9am – 12pm</option>
+                                <option value="12pm-3pm">12pm – 3pm</option>
+                                <option value="3pm-6pm">3pm – 6pm</option>
+                                <option value="6pm-9pm">6pm – 9pm</option>
+                                <option value="9pm-12am">9pm – 12am</option>
+                                <option value="flexible">Flexible</option>
+                            </select>
+                        </div>
+                        <div id="selectedSlots" class="selected-slots"></div>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-primary" id="saveProfile">Save Profile</button>
+            </div>
+        </section>
+
+        <!-- Messages -->
+        <section id="messages" class="section">
+            <h1>Messages</h1>
+            <div id="messagesList" class="messages-list"></div>
+        </section>
+
+        <!-- Notifications -->
+        <section id="notifications" class="section">
+            <h1>Notifications & Reminders</h1>
+            <div id="notificationsList" class="notifications-list"></div>
+        </section>
+
+        <!-- Individual User Page -->
+        <section id="user-page" class="section user-page-section">
+            <div id="userPageContent" class="user-page-content"></div>
+        </section>
+
+        <!-- Chat Modal -->
+        <div id="chatModal" class="modal">
+            <div class="modal-backdrop"></div>
+            <div class="modal-content chat-modal-content">
+                <div class="chat-header">
+                    <h3 id="chatPartnerName"></h3>
+                    <button type="button" class="modal-close" aria-label="Close">&times;</button>
+                </div>
+                <div id="chatMessages" class="chat-messages"></div>
+                <div class="chat-input-wrap">
+                    <input type="text" id="chatInput" placeholder="Type a message..." maxlength="500">
+                    <button type="button" class="btn btn-primary" id="sendMessageBtn">Send</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>
