@@ -631,14 +631,131 @@ function declineRequest(requestId) {
   updateBadges();
 }
 
+// --- Notifications ---
+function renderNotifications() {
+  const data = getData();
+  const current = data.currentUser;
+  const container = document.getElementById('notificationsList');
+  if (!container || !current) return;
+  
+  const requests = getRequestsForUser(data, current.id);
+  const plans = (data.plans || []).filter(p => 
+    (p.user1Id === current.id || p.user2Id === current.id) &&
+    new Date(p.date) >= new Date()
+  ).sort((a, b) => new Date(a.date) - new Date(b.date));
+  
+  let html = '';
+  
+  if (requests.length > 0) {
+    html += '<h3>Pending Requests</h3>';
+    requests.forEach(req => {
+      const fromUser = getUserById(data, req.fromUserId);
+      html += `
+        <div class="notification-card">
+          <div class="notification-header">
+            <strong>${escapeHtml(fromUser?.nickName || 'Someone')}</strong> wants to go out with you
+          </div>
+          <div class="notification-content">
+            <p>Date: ${req.date}</p>
+            ${req.activity ? `<p>Activity: ${escapeHtml(req.activity)}</p>` : ''}
+            ${req.message ? `<p>Message: ${escapeHtml(req.message)}</p>` : ''}
+          </div>
+          <div class="notification-actions">
+            <button type="button" class="btn btn-sm btn-primary" onclick="acceptRequest('${req.id}')">Accept</button>
+            <button type="button" class="btn btn-sm btn-secondary" onclick="declineRequest('${req.id}')">Decline</button>
+          </div>
+        </div>
+      `;
+    });
+  }
+  
+  if (plans.length > 0) {
+    html += '<h3>Upcoming Plans</h3>';
+    plans.forEach(plan => {
+      const partnerId = plan.user1Id === current.id ? plan.user2Id : plan.user1Id;
+      const partner = getUserById(data, partnerId);
+      const planDate = new Date(plan.date);
+      const daysUntil = Math.ceil((planDate - new Date()) / (1000 * 60 * 60 * 24));
+      html += `
+        <div class="notification-card notification-plan">
+          <div class="notification-header">
+            <strong>Plan with ${escapeHtml(partner?.nickName || 'Partner')}</strong>
+            ${daysUntil === 0 ? '<span class="plan-today">Today!</span>' : daysUntil === 1 ? '<span class="plan-tomorrow">Tomorrow</span>' : `<span class="plan-days">${daysUntil} days</span>`}
+          </div>
+          <div class="notification-content">
+            <p>Date: ${plan.date}</p>
+            ${plan.activity ? `<p>Activity: ${escapeHtml(plan.activity)}</p>` : ''}
+          </div>
+        </div>
+      `;
+    });
+  }
+  
+  if (requests.length === 0 && plans.length === 0) {
+    html = '<p class="empty-item">No notifications or upcoming plans.</p>';
+  }
+  
+  container.innerHTML = html;
+}
 
+function renderMessages() {
+  const data = getData();
+  const current = data.currentUser;
+  const container = document.getElementById('messagesList');
+  if (!container || !current) return;
+  
+  const conversations = {};
+  (data.messages || []).forEach(m => {
+    const otherId = m.fromUserId === current.id ? m.toUserId : m.fromUserId;
+    if (!conversations[otherId]) {
+      conversations[otherId] = {
+        user: getUserById(data, otherId),
+        lastMessage: m,
+        unread: m.toUserId === current.id && !m.read
+      };
+    } else {
+      if ((m.createdAt || 0) > (conversations[otherId].lastMessage.createdAt || 0)) {
+        conversations[otherId].lastMessage = m;
+      }
+      if (m.toUserId === current.id && !m.read) {
+        conversations[otherId].unread = true;
+      }
+    }
+  });
+  
+  const convs = Object.values(conversations).sort((a, b) => 
+    (b.lastMessage.createdAt || 0) - (a.lastMessage.createdAt || 0)
+  );
+  
+  if (convs.length === 0) {
+    container.innerHTML = '<p class="empty-item">No messages yet. Start chatting with your matches!</p>';
+    return;
+  }
+  
+  container.innerHTML = convs.map(conv => {
+    const user = conv.user;
+    return `
+      <div class="message-conversation" onclick="openChat('${user.id}')">
+        <div class="user-avatar">${(user.nickName || '?')[0]}</div>
+        <div class="conversation-info">
+          <div class="conversation-header">
+            <strong>${escapeHtml(user.nickName || 'Anonymous')}</strong>
+            ${conv.unread ? '<span class="unread-badge">New</span>' : ''}
+          </div>
+          <div class="conversation-preview">${escapeHtml(conv.lastMessage.text)}</div>
+          <div class="conversation-time">${formatTime(conv.lastMessage.createdAt)}</div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
 
 function updateBadges() {
   const data = getData();
   const current = data.currentUser;
   if (!current) return;
   
-  const unreadMessages = (data.messages || []).filter(m => 
+  // const unreadMessages = (data.messages || []).filter(m => 
     m.toUserId === current.id && !m.read
   ).length;
   
@@ -785,4 +902,5 @@ function init() {
 }
 
 init();
+
 
